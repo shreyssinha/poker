@@ -28,8 +28,8 @@ class Card:
         self.suit = suit
 
     def __str__(self):
-        return f"{self.rank.name[0]}{seld.suit.value}"
+        return f"{self.rank.name}{self.suit.value}"
     
     def __repr__(self):
         return str(self)
-        
+
