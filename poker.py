@@ -45,15 +45,16 @@ class Poker:
         self.board.add(self.deck.draw())
 
     def showdown(self):
-        scores = {}
+        players_hands = []
         for player in self.players:
-            if not player.folded:
-                scores[player] = self.evaluator.best_hand(
-                    player.hand, self.board.cards
-                )
-        best = max(scores.values())
-        winners = [p for p, s in scores.items() if s == best]
-        return winners
+            players_hands.append((player, player.hand, self.board.cards))
+        
+        winners_info = self.evaluator.find_winner(players_hands)
+        
+        for winner_data in winners_info:
+            winner_data['player'] = winner_data.pop('player_id')
+        
+        return winners_info
     
     def play_hand(self):
         self.deck.reset()
@@ -69,12 +70,20 @@ class Poker:
         self.deal_turn()
         self.deal_river()
 
-        winners = self.showdown()
-        split = self.pot.amount // len(winners)
-        for w in winners:
-            w.stack += split
+        winners_info = self.showdown()
+        
+        num_winners = len(winners_info)
+        split = self.pot.amount // num_winners
+        
+        for winner_data in winners_info:
+            winner_data['player'].stack += split
         
         print("Board:", self.board)
         for p in self.players:
-            print(p.name, p.hand)
-        print("Winners:", ", ".join(w.name for w in winners))
+            print(f"{p.name}: {p.hand}")
+        
+        winners_str = ", ".join(
+            f"{w['player'].name} ({w['hand_name']})" 
+            for w in winners_info
+        )
+        print(f"Winners: {winners_str}")
